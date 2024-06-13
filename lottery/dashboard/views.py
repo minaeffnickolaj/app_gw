@@ -1,11 +1,6 @@
 from django.shortcuts import render
-<<<<<<< Updated upstream
-
-# Create your views here.
-=======
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from .models import Good, Category
 from .models import Good, Category
 
 # Create your views here.
@@ -27,12 +22,3 @@ def delete_good(request):
         return JsonResponse({'success': True})
     except Good.DoesNotExist:
         return JsonResponse({'success': False})
-    
-def dashboard(request):
-    goods = Good.objects.all()
-    categories = Category.objects.all()
-    context = {
-        'goods': goods,
-        'categories': categories,
-    }
-    return render(request, 'dashboard_index.html', context)
