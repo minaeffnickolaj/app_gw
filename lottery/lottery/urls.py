@@ -19,4 +19,9 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+<<<<<<< Updated upstream
+=======
+    path('dashboard/', views.dashboard),
+    path('delete_good/', views.delete_good, name='delete_good')
+>>>>>>> Stashed changes
 ]
