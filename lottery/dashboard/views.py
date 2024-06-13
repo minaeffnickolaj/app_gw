@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from .models import Good, Category
+from .models import Good, Category
 
 # Create your views here.
 def dashboard(request):
@@ -26,4 +27,12 @@ def delete_good(request):
         return JsonResponse({'success': True})
     except Good.DoesNotExist:
         return JsonResponse({'success': False})
->>>>>>> Stashed changes
+    
+def dashboard(request):
+    goods = Good.objects.all()
+    categories = Category.objects.all()
+    context = {
+        'goods': goods,
+        'categories': categories,
+    }
+    return render(request, 'dashboard_index.html', context)

@@ -16,12 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from dashboard import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-<<<<<<< Updated upstream
-=======
     path('dashboard/', views.dashboard),
     path('delete_good/', views.delete_good, name='delete_good')
->>>>>>> Stashed changes
 ]

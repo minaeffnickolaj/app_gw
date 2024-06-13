@@ -1,3 +1,18 @@
 from django.db import models
 
-# Create your models here.
+class Category(models.Model):
+    id = models.AutoField(primary_key=True)
+    category = models.CharField(max_length=100)
+
+    def _str_(self):
+        return self.category
+    
+class Good(models.Model):
+    id = models.AutoField(primary_key=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    good_name = models.CharField(max_length=100)
+    catalog_cost = models.DecimalField(max_digits=6, decimal_places=2)
+    pv_value = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def _str_(self):
+        return self.good_name

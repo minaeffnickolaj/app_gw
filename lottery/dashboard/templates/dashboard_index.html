@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <title>Панель управления ассортиментом лотереи</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+        <style>
+            body {
+                background-color: white;
+            }
+            .custom-block {
+                margin: 5% 15%;
+                padding: 20px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                background-color: #fff;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="custom-block">
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="main-tab" data-toggle="tab" href="#main" role="tab" aria-controls="main" aria-selected="true">Товары</a>
+                </li>
+            </ul>
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="main" role="tabpanel" aria-labelledby="main-tab">
+                    <h2 class="mt-3">Список товаров</h2>
+                    <div class="container-fluid mt-3">
+                        <div class="row">
+                            <div class="col-md-4" style="width: 30%;">
+                                <!-- Этот блок занимает 30% ширины -->
+                                <div>
+                                    <h3>Категории</h3>
+                                    <ul class="list-group">
+                                        {% for category in categories %}
+                                            <li class="list-group-item">
+                                                <a href="#collapseCategory{{ category.id }}" data-toggle="collapse" aria-expanded="false" aria-controls="collapseCategory{{ category.id }}">
+                                                    {{ category.category }}
+                                                </a>
+                                                <ul class="list-group collapse mt-2" id="collapseCategory{{ category.id }}">
+                                                    {% for good in category.good_set.all %}
+                                                        <li class="list-group-item">
+                                                            <a href="#" class="good-item" data-id="{{ good.id }}" data-name="{{ good.good_name }}" data-category="{{ good.category.category }}" data-cost="{{ good.catalog_cost }}" data-pv="{{ good.pv_value }}">
+                                                                {{ good.good_name }}
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-8" style="width: 70%;">
+                                <!-- Этот блок занимает оставшуюся ширину -->
+                                <div id="good-details" class="card" style="display: none;">
+                                    <div class="card-header">
+                                        <h5 id="good-name"></h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p><strong>Категория:</strong> <span id="good-category"></span></p>
+                                        <p><strong>Цена в каталоге:</strong> <span id="good-cost"></span></p>
+                                        <p><strong>Объем в PV:</strong> <span id="good-pv"></span></p>
+                                        <!-- Блок с кнопками Удалить и Редактировать -->
+                                        <div class="mt-3">
+                                            <button id="edit-button" class="btn btn-primary">Редактировать</button>
+                                            <button id="delete-button" class="btn btn-danger">Удалить</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- AJAX CSRF -->
+        <script>
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // Имя точно верное?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+        </script>
+        <script>
+            $(document).ready(function() {
+                // Обработчик кликов по элементам списка товаров
+                $('.good-item').click(function(e) {
+                    e.preventDefault();
+                    var goodName = $(this).data('name');
+                    var goodCategory = $(this).data('category');
+                    var goodCost = $(this).data('cost');
+                    var goodPv = $(this).data('pv');
+                    var goodId = $(this).data('id'); // Получаем ID товара
+
+                    $('#good-name').text(goodName);
+                    $('#good-category').text(goodCategory);
+                    $('#good-cost').text(goodCost);
+                    $('#good-pv').text(goodPv);
+
+                    // Сохраняем ID товара в кнопках
+                    $('#edit-button').data('id', goodId);
+                    $('#delete-button').data('id', goodId);
+                    $('#delete-button').data('name', goodName); // Сохраняем имя товара для уведомления
+
+                    $('#good-details').show();
+                });
+
+                // Обработчик клика по кнопке Удалить
+                $('#delete-button').click(function() {
+                    var goodId = $(this).data('id');
+                    var goodName = $(this).data('name'); // Получаем имя товара для уведомления
+
+                    if (confirm('Вы уверены, что хотите удалить этот товар?')) {
+                        $.ajax({
+                            url: '{% url "delete_good" %}', // URL для обработки запроса на удаление
+                            type: 'POST',
+                            data: {
+                                'id': goodId
+                            },
+                            headers: {
+                                'X-CSRFToken': csrftoken
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    toastr.success('Товар ' + goodName + ' был удален из базы');
+                                    $('#good-details').hide();
+                                    // Удаляем товар из списка на странице, но без загрузки обновленных данных
+                                    // Нет смысла гонять запросы если работать с базой будет кто-то один
+                                $('.good-item[data-id="' + goodId + '"]').parent().remove();
+                                } else {
+                                    toastr.error('Произошла ошибка при удалении товара');
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
