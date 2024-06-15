@@ -21,5 +21,9 @@ from dashboard import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('dashboard/', views.dashboard),
-    path('delete_good/', views.delete_good, name='delete_good')
+    path('delete_good/', views.delete_good, name='delete_good'),
+    path('get_good/<int:good_id>/', views.get_good_details, name='get_good'),
+    path('update_good/', views.update_good, name="update_good"),
+    path('get_categories/', views.get_categories, name='get_categories'),
+    path('delete_category/', views.delete_category, name='delete_category'),
 ]
