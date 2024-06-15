@@ -125,7 +125,31 @@
                                         <button class="btn btn-primary btn-block mb-2">Импорт данных</button>
                                         <button class="btn btn-primary btn-block mb-2">Добавить категорию</button>
                                         <button class="btn btn-primary btn-block mb-2">Добавить товар</button>
-                                        <button class="btn btn-primary btn-block mb-2">Удалить категорию и подчиненные товары</button>
+                                        <button id="delete-category-button" class="btn btn-primary btn-block mb-2">Удалить категорию и подчиненные товары</button>
+                                        <!-- Модальное окно для удаления категории -->
+                                        <div class="modal fade" id="deleteCategoryModal" tabindex="-1" role="dialog" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="deleteCategoryModalLabel">Удалить категорию</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <form id="deleteCategoryForm">
+                                                            <div class="form-group">
+                                                                <label for="categorySelect">Выберите категорию</label>
+                                                                <select class="form-control" id="categorySelect" name="category_id">
+                                                                    <!-- Опции будут добавлены динамически -->
+                                                                </select>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-danger">Удалить</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -154,6 +178,54 @@
                 return cookieValue;
             }
             const csrftoken = getCookie('csrftoken');
+
+            // Функция для обновления боковой панели с категориями и товарами
+            function refreshSidebar(categories, goods) {
+                var $categoriesList = $('ul.list-group');
+                $categoriesList.empty(); // Очищаем текущие элементы списка
+                $.each(categories, function(index, category) {
+                    var $categoryItem = $('<li>', { 'class': 'list-group-item' });
+                    var $categoryLink = $('<a>', {
+                        href: '#collapseCategory' + category.id,
+                        'data-toggle': 'collapse',
+                        'aria-expanded': 'false',
+                        'aria-controls': 'collapseCategory' + category.id,
+                        text: category.category,
+                    });
+
+                    var $goodsList = $('<ul>', {
+                        'class': 'list-group collapse mt-2',
+                        id: 'collapseCategory' + category.id
+                    });
+
+                    var filteredGoods = goods.filter(function(good) {
+                        return good.category_id === category.id;
+                    });
+
+                    console.log("Filtered goods for category", category.id, filteredGoods);
+
+                    $.each(filteredGoods, function(index, good) {
+                        var $goodItem = $('<li>', { 'class': 'list-group-item' });
+                        var $goodLink = $('<a>', {
+                            href: '#',
+                            'class': 'good-item',
+                            'data-id': good.id,
+                            'data-name': good.good_name,
+                            'data-category-id': good.category_id,
+                            'data-category': category.category,
+                            'data-cost': good.catalog_cost,
+                            'data-pv': good.pv_value,
+                            text: good.good_name
+                        });
+                        $goodItem.append($goodLink);
+                        $goodsList.append($goodItem);
+                    });
+
+                    $categoryItem.append($categoryLink);
+                    $categoryItem.append($goodsList);
+                    $categoriesList.append($categoryItem);
+                });
+            }
             
             $(document).ready(function() {
                 // Обработчик кликов по элементам списка товаров (в том числе и добавленных динамически)
@@ -250,64 +322,80 @@
                 
                             // Закрываем модальное окно после успешного обновления
                             $('#editModal').modal('hide');
-                
-                            // Обновляем данные о категориях и товарах на странице
-                            var $categoriesList = $('ul.list-group');
-                            $categoriesList.empty(); // Очищаем текущие элементы списка
-                
                             var categories = response.categories;
-                            var goods = response.goods;
-                
-                            // Проверка данных в консоли
-                            console.log("Categories:", categories);
-                            console.log("Goods:", goods);
-                
-                            $.each(categories, function(index, category) {
-                                var $categoryItem = $('<li>', { 'class': 'list-group-item' });
-                                var $categoryLink = $('<a>', {
-                                    href: '#collapseCategory' + category.id,
-                                    'data-toggle': 'collapse',
-                                    'aria-expanded': 'false',
-                                    'aria-controls': 'collapseCategory' + category.id,
-                                    text: category.category // Примечание: убедитесь, что это правильное поле
-                                });
-                
-                                var $goodsList = $('<ul>', {
-                                    'class': 'list-group collapse mt-2',
-                                    id: 'collapseCategory' + category.id
-                                });
-                
-                                var filteredGoods = goods.filter(function(good) {
-                                    return good.category_id === category.id;
-                                });
-                
-                                console.log("Filtered goods for category", category.id, filteredGoods);
-                
-                                $.each(filteredGoods, function(index, good) {
-                                    var $goodItem = $('<li>', { 'class': 'list-group-item' });
-                                    var $goodLink = $('<a>', {
-                                        href: '#',
-                                        'class': 'good-item',
-                                        'data-id': good.id,
-                                        'data-name': good.good_name,
-                                        'data-category-id': good.category_id,
-                                        'data-category': category.category,
-                                        'data-cost': good.catalog_cost,
-                                        'data-pv': good.pv_value,
-                                        text: good.good_name
-                                    });
-                                    $goodItem.append($goodLink);
-                                    $goodsList.append($goodItem);
-                                });
-                
-                                $categoryItem.append($categoryLink);
-                                $categoryItem.append($goodsList);
-                                $categoriesList.append($categoryItem);
-                            });
+                            var goods = response.goods; 
+                            refreshSidebar(categories,goods);
                             $('#good-details').css('display', 'none');
                         },
                         error: function(xhr, status, error) {
                             toastr.error('Произошла ошибка при обновлении товара');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
+
+                //каскадное удаление по категории
+                $('#delete-category-button').click(function() {
+                    // Получение списка категорий с сервера
+                    $.ajax({
+                        type: 'GET',
+                        url: '/get_categories/',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(categories) {
+                            var $categorySelect = $('#categorySelect');
+                            $categorySelect.empty(); // Очистка текущих опций
+            
+                            // Добавление опций в выпадающий список
+                            $.each(categories, function(index, category) {
+                                $categorySelect.append($('<option>', {
+                                    value: category.id,
+                                    text: category.category
+                                }));
+                            });
+            
+                            // Отображение модального окна
+                            $('#deleteCategoryModal').modal('show');
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при получении списка категорий');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
+
+                // Обработчик отправки формы удаления категории
+                $('#deleteCategoryForm').submit(function(e) {
+                    e.preventDefault();
+
+                    var confirmed = confirm('Вы уверены, что хотите удалить эту категорию и все связанные товары?');
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    var formData = $(this).serialize(); // Получение данных формы
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/delete_category/',
+                        data: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            toastr.success(response.message); // Показ сообщения об успешном удалении
+
+                            // Закрытие модального окна
+                            $('#deleteCategoryModal').modal('hide');
+                            var categories = response.categories;
+                            var goods = response.goods; 
+                            refreshSidebar(categories,goods);
+                            // Обновление списка категорий и товаров на странице
+                            // Здесь можно повторно вызвать функцию для получения и отображения актуального списка категорий и товаров
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при удалении категории');
                             console.error(xhr.responseText);
                         }
                     });

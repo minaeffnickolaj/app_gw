@@ -74,3 +74,29 @@ def update_good(request):
         return JsonResponse(response_data, status=200)
     
     return JsonResponse({'error': 'Метод не разрешен'}, status=405)
+
+def get_categories(request):
+    if request.method == 'GET':
+        categories = Category.objects.all()
+        categories_list = list(categories.values('id', 'category'))
+        return JsonResponse(categories_list, safe=False)
+    return JsonResponse({'error': 'Метод не разрешен'}, status=405)
+
+@require_POST
+def delete_category(request):
+    category_id = request.POST.get('category_id')
+    if category_id:
+        category = get_object_or_404(Category, pk=category_id)
+        push_category_name = category.category
+        category.delete()
+
+        categories = Category.objects.all()
+        goods = Good.objects.all()
+
+        response_data = {
+        'message': 'Категория ' + push_category_name +  ' удалена',
+        'categories':list(categories.values('id','category')),
+        'goods':list(goods.values('id','category_id','good_name','catalog_cost','pv_value'))
+        }
+        return JsonResponse(response_data, status=200)
+    return JsonResponse({'error': 'ID категории не предоставлен'}, status=400)
