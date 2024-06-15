@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 from .models import Good, Category
+from .forms import GoodForm
 
 # Create your views here.
 def dashboard(request):
@@ -22,3 +23,17 @@ def delete_good(request):
         return JsonResponse({'success': True})
     except Good.DoesNotExist:
         return JsonResponse({'success': False})
+    
+@require_GET   
+def get_good_details(request, good_id):
+    try:
+        good = get_object_or_404(Good, id=good_id)
+        data = {
+            'good_name': good.good_name,
+            'category_id': good.category_id,
+            'catalog_cost': good.catalog_cost,
+            'pv_value': good.pv_value
+        }
+        return JsonResponse(data)
+    except Http404:
+        return JsonResponse({'error': 'Good not found'}, status=404)
