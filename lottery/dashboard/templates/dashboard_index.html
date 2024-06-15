@@ -44,7 +44,7 @@
                                                 <ul class="list-group collapse mt-2" id="collapseCategory{{ category.id }}">
                                                     {% for good in category.good_set.all %}
                                                         <li class="list-group-item">
-                                                            <a href="#" class="good-item" data-id="{{ good.id }}" data-name="{{ good.good_name }}" data-category="{{ good.category.category }}" data-cost="{{ good.catalog_cost }}" data-pv="{{ good.pv_value }}">
+                                                            <a href="#" class="good-item" data-id="{{ good.id }}" data-name="{{ good.good_name }}" data-category-id="{{good.category}}" data-category="{{ good.category.category }}" data-cost="{{ good.catalog_cost }}" data-pv="{{ good.pv_value }}">
                                                                 {{ good.good_name }}
                                                             </a>
                                                         </li>
@@ -82,6 +82,7 @@
                                                         </button>
                                                       </div>
                                                       <div class="modal-body">
+                                                        <input type="hidden" id="editGoodId" name="good_id" value=""> <!-- проброс id -->
                                                         <!-- Поля для редактирования -->
                                                         <div class="form-group">
                                                           <label for="editName">Название товара</label>
@@ -155,25 +156,25 @@
             const csrftoken = getCookie('csrftoken');
             
             $(document).ready(function() {
-                // Обработчик кликов по элементам списка товаров
-                $('.good-item').click(function(e) {
+                // Обработчик кликов по элементам списка товаров (в том числе и добавленных динамически)
+                $(document).on('click', '.good-item', function(e) {
                     e.preventDefault();
                     var goodName = $(this).data('name');
                     var goodCategory = $(this).data('category');
                     var goodCost = $(this).data('cost');
                     var goodPv = $(this).data('pv');
                     var goodId = $(this).data('id'); // Получаем ID товара
-            
+                
                     $('#good-name').text(goodName);
                     $('#good-category').text(goodCategory);
                     $('#good-cost').text(goodCost);
                     $('#good-pv').text(goodPv);
-            
+                
                     // Сохраняем ID товара в кнопках
                     $('#edit-button').data('id', goodId);
                     $('#delete-button').data('id', goodId);
                     $('#delete-button').data('name', goodName); // Сохраняем имя товара для уведомления
-            
+                
                     $('#good-details').show();
                 });
             
@@ -221,6 +222,7 @@
                             $('#editCategory').val(response.category_id);
                             $('#editCost').val(response.catalog_cost);
                             $('#editPV').val(response.pv_value);
+                            $('#editGoodId').val(good_id); // Установка значения good_id
                             $('#editModal').modal('show');
                         },
                         error: function(xhr, status, error) {
@@ -228,6 +230,88 @@
                         }
                     });
                 });    
+
+                $('#editForm').submit(function(e) {
+                    e.preventDefault(); // Предотвращаем стандартное поведение формы
+            
+                    var formData = $(this).serialize(); // Получаем данные формы в виде строки
+                    var good_id = $('#editGoodId').val();
+                    formData += '&good_id=' + good_id;
+            
+                    $.ajax({
+                        type: 'POST',
+                        url: '/update_good/',
+                        data: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            toastr.success(response.message); // Выводим сообщение об успешном обновлении
+                
+                            // Закрываем модальное окно после успешного обновления
+                            $('#editModal').modal('hide');
+                
+                            // Обновляем данные о категориях и товарах на странице
+                            var $categoriesList = $('ul.list-group');
+                            $categoriesList.empty(); // Очищаем текущие элементы списка
+                
+                            var categories = response.categories;
+                            var goods = response.goods;
+                
+                            // Проверка данных в консоли
+                            console.log("Categories:", categories);
+                            console.log("Goods:", goods);
+                
+                            $.each(categories, function(index, category) {
+                                var $categoryItem = $('<li>', { 'class': 'list-group-item' });
+                                var $categoryLink = $('<a>', {
+                                    href: '#collapseCategory' + category.id,
+                                    'data-toggle': 'collapse',
+                                    'aria-expanded': 'false',
+                                    'aria-controls': 'collapseCategory' + category.id,
+                                    text: category.category // Примечание: убедитесь, что это правильное поле
+                                });
+                
+                                var $goodsList = $('<ul>', {
+                                    'class': 'list-group collapse mt-2',
+                                    id: 'collapseCategory' + category.id
+                                });
+                
+                                var filteredGoods = goods.filter(function(good) {
+                                    return good.category_id === category.id;
+                                });
+                
+                                console.log("Filtered goods for category", category.id, filteredGoods);
+                
+                                $.each(filteredGoods, function(index, good) {
+                                    var $goodItem = $('<li>', { 'class': 'list-group-item' });
+                                    var $goodLink = $('<a>', {
+                                        href: '#',
+                                        'class': 'good-item',
+                                        'data-id': good.id,
+                                        'data-name': good.good_name,
+                                        'data-category-id': good.category_id,
+                                        'data-category': category.category,
+                                        'data-cost': good.catalog_cost,
+                                        'data-pv': good.pv_value,
+                                        text: good.good_name
+                                    });
+                                    $goodItem.append($goodLink);
+                                    $goodsList.append($goodItem);
+                                });
+                
+                                $categoryItem.append($categoryLink);
+                                $categoryItem.append($goodsList);
+                                $categoriesList.append($categoryItem);
+                            });
+                            $('#good-details').css('display', 'none');
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при обновлении товара');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
             });
         </script>
     </body>
