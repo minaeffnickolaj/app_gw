@@ -100,3 +100,30 @@ def delete_category(request):
         }
         return JsonResponse(response_data, status=200)
     return JsonResponse({'error': 'ID категории не предоставлен'}, status=400)
+
+@require_POST
+def add_good(request):
+    good_name = request.POST.get('good_name')
+    category_id = request.POST.get('category_id')
+    catalog_cost = request.POST.get('catalog_cost')
+    pv_value = request.POST.get('pv_value')
+
+    category = get_object_or_404(Category, pk=category_id)
+    
+    good = Good.objects.create(
+        good_name=good_name,
+        category=category,
+        catalog_cost=catalog_cost,
+        pv_value=pv_value
+    )
+    good.save()
+    categories = Category.objects.all()
+    goods = Good.objects.all()
+
+    response_data = {
+        'message': 'Товар \"' + good_name + '\" успешно добавлен',
+        'categories': list(categories.values('id', 'category')),
+        'goods': list(goods.values('id', 'category_id', 'good_name', 'catalog_cost', 'pv_value'))
+    }
+
+    return JsonResponse(response_data, status=200)
