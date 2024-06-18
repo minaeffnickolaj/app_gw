@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
 from .models import Good, Category
 
 # Create your views here.
@@ -127,3 +128,22 @@ def add_good(request):
     }
 
     return JsonResponse(response_data, status=200)
+
+@csrf_exempt
+def add_category(request):
+    if request.method == 'POST':
+        category_name = request.POST.get('category_name')
+        if category_name:
+            category = Category.objects.create(category=category_name)
+            categories = Category.objects.all().values('id', 'category')
+            goods = Good.objects.all().values('id', 'good_name', 'category_id', 'catalog_cost', 'pv_value')
+            return JsonResponse({
+                'success': True,
+                'message': 'Категория \"' + category.category + '\" успешно добавлена',
+                'categories': list(categories),
+                'goods': list(goods)
+            })
+        else:
+            return JsonResponse({'success': False, 'message': 'Название категории не может быть пустым'}, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Неподдерживаемый метод'}, status=405)
