@@ -122,7 +122,33 @@
                                 <h3>Действия</h3>
                                 <div class="row">
                                     <div class="col">
-                                        <button class="btn btn-primary btn-block mb-2">Импорт данных</button>
+                                        <button id="import_data_button" class="btn btn-primary btn-block mb-2">Импорт данных</button>
+                                        <!-- Модальное окно для загрузки Excel файла -->
+                                        <div class="modal fade" id="uploadExcelModal" tabindex="-1" role="dialog" aria-labelledby="uploadExcelModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <form id="uploadExcelForm" enctype="multipart/form-data">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="uploadExcelModalLabel">Загрузить Excel файл с товарами</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label for="excelFile">Выберите файл</label>
+                                                                <input type="file" class="form-control" id="excelFile" name="excel_file" accept=".xlsx, .xls" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button id="export_data_button" class="btn btn-primary btn-block mb-2">Экспорт данных</button>
                                         <button id="add_category_button" class="btn btn-primary btn-block mb-2">Добавить категорию</button>
                                         <!-- Модальное окно для добавления категории -->
                                         <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
@@ -551,6 +577,69 @@
                         error: function(xhr, status, error) {
                             toastr.error('Произошла ошибка при добавлении категории');
                             console.error(xhr.responseText);
+                        }
+                    });
+                });
+
+                $('#import_data_button').click(function() {
+                    $('#uploadExcelModal').modal('show');
+                });
+
+                $('#uploadExcelForm').submit(function(e) {
+                    e.preventDefault(); // Предотвращаем стандартное поведение формы
+            
+                    var formData = new FormData(this); // Получаем данные формы
+            
+                    $.ajax({
+                        type: 'POST',
+                        url: '/insert_batch/',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        success: function(response) {
+                            toastr.success(response.message); // Выводим сообщение об успешной загрузке
+            
+                            // Закрываем модальное окно после успешной загрузки
+                            $('#uploadExcelModal').modal('hide');
+            
+                            // Обновляем данные о категориях и товарах на странице
+                            refreshSidebar(response.categories, response.goods);
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при загрузке файла');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });            
+
+                $('#export_data_button').click(function() {
+                    $.ajax({
+                        url: '{% url "export_to_excel" %}',
+                        type: 'GET',
+                        xhrFields: {
+                            responseType: 'blob' // Позволяет получить данные как Blob
+                        },
+                        success: function(data, status, xhr) {
+                            var filename = "";
+                            var disposition = xhr.getResponseHeader('Content-Disposition');
+                            if (disposition && disposition.indexOf('attachment') !== -1) {
+                                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                                var matches = filenameRegex.exec(disposition);
+                                if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                            }
+                            var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                            var link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.download = filename || 'categories_and_goods.xlsx';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при экспорте данных');
                         }
                     });
                 });
