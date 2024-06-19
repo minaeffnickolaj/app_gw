@@ -122,9 +122,99 @@
                                 <h3>Действия</h3>
                                 <div class="row">
                                     <div class="col">
-                                        <button class="btn btn-primary btn-block mb-2">Импорт данных</button>
-                                        <button class="btn btn-primary btn-block mb-2">Добавить категорию</button>
-                                        <button class="btn btn-primary btn-block mb-2">Добавить товар</button>
+                                        <button id="import_data_button" class="btn btn-primary btn-block mb-2">Импорт данных</button>
+                                        <!-- Модальное окно для загрузки Excel файла -->
+                                        <div class="modal fade" id="uploadExcelModal" tabindex="-1" role="dialog" aria-labelledby="uploadExcelModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <form id="uploadExcelForm" enctype="multipart/form-data">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="uploadExcelModalLabel">Загрузить Excel файл с товарами</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label for="excelFile">Выберите файл</label>
+                                                                <input type="file" class="form-control" id="excelFile" name="excel_file" accept=".xlsx, .xls" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                                                            <button type="submit" class="btn btn-primary">Загрузить</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button id="export_data_button" class="btn btn-primary btn-block mb-2">Экспорт данных</button>
+                                        <button id="add_category_button" class="btn btn-primary btn-block mb-2">Добавить категорию</button>
+                                        <!-- Модальное окно для добавления категории -->
+                                        <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <form id="addCategoryForm">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="addCategoryModalLabel">Добавить категорию</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label for="categoryName">Название категории</label>
+                                                                <input type="text" class="form-control" id="categoryName" name="category_name" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                                                            <button type="submit" class="btn btn-primary">Добавить</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button id="add_good_button" class="btn btn-primary btn-block mb-2">Добавить товар</button>
+                                        <!-- Модальное окно для добавления товара -->
+                                        <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <form id="addForm">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="addModalLabel">Добавить товар</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label for="addName">Название товара</label>
+                                                                <input type="text" class="form-control" id="addName" name="good_name" required>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="addCategory">Категория</label>
+                                                                <select class="form-control" id="addCategory" name="category_id" required>
+                                                                    <!-- Категории будут динамически загружены -->
+                                                                </select>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="addCost">Цена</label>
+                                                                <input type="number" class="form-control" id="addCost" name="catalog_cost" required>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="addPV">PV</label>
+                                                                <input type="number" class="form-control" id="addPV" name="pv_value" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                                                            <button type="submit" class="btn btn-primary">Добавить</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <button id="delete-category-button" class="btn btn-primary btn-block mb-2">Удалить категорию и подчиненные товары</button>
                                         <!-- Модальное окно для удаления категории -->
                                         <div class="modal fade" id="deleteCategoryModal" tabindex="-1" role="dialog" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
@@ -226,7 +316,7 @@
                     $categoriesList.append($categoryItem);
                 });
             }
-            
+
             $(document).ready(function() {
                 // Обработчик кликов по элементам списка товаров (в том числе и добавленных динамически)
                 $(document).on('click', '.good-item', function(e) {
@@ -315,7 +405,7 @@
                         url: '/update_good/',
                         data: formData,
                         headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
+                            'X-CSRFToken': csrftoken
                         },
                         success: function(response) {
                             toastr.success(response.message); // Выводим сообщение об успешном обновлении
@@ -397,6 +487,159 @@
                         error: function(xhr, status, error) {
                             toastr.error('Произошла ошибка при удалении категории');
                             console.error(xhr.responseText);
+                        }
+                    });
+                });
+            
+                // Открытие модального окна для добавления товара
+                $('#add_good_button').click(function() {
+                        $.ajax({
+                        type: 'GET',
+                        url: '/get_categories/',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            var categories = response;
+                            var $addCategory = $('#addCategory');
+                            $addCategory.empty();
+                            $.each(categories, function(index, category) {
+                                var $option = $('<option>', {
+                                    value: category.id,
+                                    text: category.category
+                                });
+                                $addCategory.append($option);
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при загрузке категорий');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                    $('#addModal').modal('show');
+                });
+
+                $('#addForm').submit(function(e) {
+                    e.preventDefault(); // Предотвращаем стандартное поведение формы
+
+                    var formData = $(this).serialize(); // Получаем данные формы в виде строки
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/add_good/',
+                        data: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            toastr.success(response.message); // Выводим сообщение об успешном добавлении
+
+                            // Закрываем модальное окно после успешного добавления
+                            $('#addModal').modal('hide');
+
+                            // Обновляем данные о категориях и товарах на странице
+                            refreshSidebar(response.categories, response.goods);
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при добавлении товара');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
+            
+                // Открытие модального окна для добавления категории
+                $('#add_category_button').click(function() {
+                    $('#addCategoryModal').modal('show');
+                });
+
+                // Обработчик отправки формы добавления категории
+                $('#addCategoryForm').submit(function(e) {
+                    e.preventDefault(); // Предотвращаем стандартное поведение формы
+
+                    var formData = $(this).serialize(); // Получаем данные формы в виде строки
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/add_category/',
+                        data: formData,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        success: function(response) {
+                            toastr.success(response.message); // Выводим сообщение об успешном добавлении
+
+                            // Закрываем модальное окно после успешного добавления
+                            $('#addCategoryModal').modal('hide');
+
+                            // Обновляем данные о категориях на странице
+                            refreshSidebar(response.categories, response.goods);
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при добавлении категории');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });
+
+                $('#import_data_button').click(function() {
+                    $('#uploadExcelModal').modal('show');
+                });
+
+                $('#uploadExcelForm').submit(function(e) {
+                    e.preventDefault(); // Предотвращаем стандартное поведение формы
+            
+                    var formData = new FormData(this); // Получаем данные формы
+            
+                    $.ajax({
+                        type: 'POST',
+                        url: '/insert_batch/',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        success: function(response) {
+                            toastr.success(response.message); // Выводим сообщение об успешной загрузке
+            
+                            // Закрываем модальное окно после успешной загрузки
+                            $('#uploadExcelModal').modal('hide');
+            
+                            // Обновляем данные о категориях и товарах на странице
+                            refreshSidebar(response.categories, response.goods);
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при загрузке файла');
+                            console.error(xhr.responseText);
+                        }
+                    });
+                });            
+
+                $('#export_data_button').click(function() {
+                    $.ajax({
+                        url: '{% url "export_to_excel" %}',
+                        type: 'GET',
+                        xhrFields: {
+                            responseType: 'blob' // Позволяет получить данные как Blob
+                        },
+                        success: function(data, status, xhr) {
+                            var filename = "";
+                            var disposition = xhr.getResponseHeader('Content-Disposition');
+                            if (disposition && disposition.indexOf('attachment') !== -1) {
+                                var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                                var matches = filenameRegex.exec(disposition);
+                                if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                            }
+                            var blob = new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                            var link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.download = filename || 'categories_and_goods.xlsx';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        },
+                        error: function(xhr, status, error) {
+                            toastr.error('Произошла ошибка при экспорте данных');
                         }
                     });
                 });

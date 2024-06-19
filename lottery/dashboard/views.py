@@ -1,7 +1,10 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
 from .models import Good, Category
+from io import BytesIO
+import openpyxl
 
 # Create your views here.
 def dashboard(request):
@@ -100,3 +103,115 @@ def delete_category(request):
         }
         return JsonResponse(response_data, status=200)
     return JsonResponse({'error': 'ID категории не предоставлен'}, status=400)
+
+@require_POST
+def add_good(request):
+    good_name = request.POST.get('good_name')
+    category_id = request.POST.get('category_id')
+    catalog_cost = request.POST.get('catalog_cost')
+    pv_value = request.POST.get('pv_value')
+
+    category = get_object_or_404(Category, pk=category_id)
+    
+    good = Good.objects.create(
+        good_name=good_name,
+        category=category,
+        catalog_cost=catalog_cost,
+        pv_value=pv_value
+    )
+    good.save()
+    categories = Category.objects.all()
+    goods = Good.objects.all()
+
+    response_data = {
+        'message': 'Товар \"' + good_name + '\" успешно добавлен',
+        'categories': list(categories.values('id', 'category')),
+        'goods': list(goods.values('id', 'category_id', 'good_name', 'catalog_cost', 'pv_value'))
+    }
+
+    return JsonResponse(response_data, status=200)
+
+@csrf_exempt
+def add_category(request):
+    if request.method == 'POST':
+        category_name = request.POST.get('category_name')
+        if category_name:
+            category = Category.objects.create(category=category_name)
+            categories = Category.objects.all().values('id', 'category')
+            goods = Good.objects.all().values('id', 'good_name', 'category_id', 'catalog_cost', 'pv_value')
+            return JsonResponse({
+                'success': True,
+                'message': 'Категория \"' + category.category + '\" успешно добавлена',
+                'categories': list(categories),
+                'goods': list(goods)
+            })
+        else:
+            return JsonResponse({'success': False, 'message': 'Название категории не может быть пустым'}, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Неподдерживаемый метод'}, status=405)
+
+@csrf_exempt
+def upload_excel(request):
+    if request.method == 'POST' and request.FILES.get('excel_file'):
+        excel_file = request.FILES['excel_file']
+        wb = openpyxl.load_workbook(excel_file)
+        sheet = wb.active
+        
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            category_name, good_name, catalog_cost, pv_value = row
+            category, created = Category.objects.get_or_create(category=category_name)
+            
+            # Проверяем, существует ли товар с таким именем и категорией
+            good, good_created = Good.objects.get_or_create(
+                good_name=good_name,
+                category=category,
+                defaults={
+                    'catalog_cost': catalog_cost,
+                    'pv_value': pv_value
+                }
+            )    
+            # Если товар существует, обновляем его оставшиеся данные
+            if not good_created:
+                good.catalog_cost = catalog_cost
+                good.pv_value = pv_value
+                good.save()
+        
+        categories = Category.objects.all().values('id', 'category')
+        goods = Good.objects.all().values('id', 'good_name', 'category_id', 'catalog_cost', 'pv_value')
+        return JsonResponse({
+            'success': True,
+            'message': 'Файл успешно загружен и обработан',
+            'categories': list(categories),
+            'goods': list(goods)
+        })
+    return JsonResponse({'success': False, 'message': 'Неподдерживаемый метод'}, status=405)
+
+def export_excel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Товары"
+
+    # Заполнение заголовков столбцов
+    headers = ['Категория', 'Наименование', 'Цена по каталогу', 'Объем в PV']
+    ws.append(headers)
+
+    # Получение данных из базы данных и заполнение строк
+    categories = Category.objects.all()
+    for category in categories:
+        goods = Good.objects.filter(category=category)
+        for good in goods:
+            row = [
+                category.category,
+                good.good_name,
+                good.catalog_cost,
+                good.pv_value
+            ]
+            ws.append(row)
+
+    virtual_workbook = BytesIO()
+    wb.save(virtual_workbook)
+    virtual_workbook.seek(0)
+    # Создание HTTP ответа с типом содержимого, соответствующим Excel файлу
+    response = HttpResponse(content=virtual_workbook, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=gw_export_goods.xlsx'
+    return response

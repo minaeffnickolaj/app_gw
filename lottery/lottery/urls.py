@@ -26,4 +26,8 @@ urlpatterns = [
     path('update_good/', views.update_good, name="update_good"),
     path('get_categories/', views.get_categories, name='get_categories'),
     path('delete_category/', views.delete_category, name='delete_category'),
+    path('add_good/', views.add_good, name="add_good"),
+    path('add_category/', views.add_category, name='add_category'),
+    path('insert_batch/', views.upload_excel, name="upload_excel"),
+    path('export/', views.export_excel, name='export_to_excel'),
 ]
