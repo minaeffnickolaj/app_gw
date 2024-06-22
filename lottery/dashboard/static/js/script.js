@@ -93,7 +93,7 @@ $(document).ready(function() {
 
         if (confirm('Вы уверены, что хотите удалить этот товар?')) {
             $.ajax({
-                url: '/delete_good/', // URL для обработки запроса на удаление
+                url: '/dashboard/delete_good/', // URL для обработки запроса на удаление
                 type: 'POST',
                 data: {
                     'id': goodId
@@ -120,7 +120,7 @@ $(document).ready(function() {
     $('#edit-button').click(function() {
         var good_id = $(this).data('id');
         $.ajax({
-            url: '/get_good/' + good_id + '/', // Используется правильный шаблон тега url
+            url: '/dashboard/get_good/' + good_id + '/', // Используется правильный шаблон тега url
             type: 'GET',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}'
@@ -148,7 +148,7 @@ $(document).ready(function() {
 
         $.ajax({
             type: 'POST',
-            url: '/update_good/',
+            url: '/dashboard/update_good/',
             data: formData,
             headers: {
                 'X-CSRFToken': csrftoken
@@ -175,7 +175,7 @@ $(document).ready(function() {
         // Получение списка категорий с сервера
         $.ajax({
             type: 'GET',
-            url: '/get_categories/',
+            url: '/dashboard/get_categories/',
             headers: {
                 'X-CSRFToken': csrftoken
             },
@@ -214,7 +214,7 @@ $(document).ready(function() {
 
         $.ajax({
             type: 'POST',
-            url: '/delete_category/',
+            url: '/dashboard/delete_category/',
             data: formData,
             headers: {
                 'X-CSRFToken': csrftoken
@@ -241,7 +241,7 @@ $(document).ready(function() {
     $('#add_good_button').click(function() {
             $.ajax({
             type: 'GET',
-            url: '/get_categories/',
+            url: '/dashboard/get_categories/',
             headers: {
                 'X-CSRFToken': csrftoken
             },
@@ -272,7 +272,7 @@ $(document).ready(function() {
 
         $.ajax({
             type: 'POST',
-            url: '/add_good/',
+            url: '/dashboard/add_good/',
             data: formData,
             headers: {
                 'X-CSRFToken': csrftoken
@@ -306,7 +306,7 @@ $(document).ready(function() {
 
         $.ajax({
             type: 'POST',
-            url: '/add_category/',
+            url: '/dashboard/add_category/',
             data: formData,
             headers: {
                 'X-CSRFToken': csrftoken
@@ -338,7 +338,7 @@ $(document).ready(function() {
 
         $.ajax({
             type: 'POST',
-            url: '/insert_batch/',
+            url: '/dashboard/insert_batch/',
             data: formData,
             contentType: false,
             processData: false,
@@ -363,7 +363,7 @@ $(document).ready(function() {
 
     $('#export_data_button').click(function() {
         $.ajax({
-            url: '/export/',
+            url: '/dashboard/export/',
             type: 'GET',
             xhrFields: {
                 responseType: 'blob' // Позволяет получить данные как Blob

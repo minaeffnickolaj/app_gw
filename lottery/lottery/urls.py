@@ -15,19 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from dashboard import views
+from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dashboard/', views.dashboard),
-    path('delete_good/', views.delete_good, name='delete_good'),
-    path('get_good/<int:good_id>/', views.get_good_details, name='get_good'),
-    path('update_good/', views.update_good, name="update_good"),
-    path('get_categories/', views.get_categories, name='get_categories'),
-    path('delete_category/', views.delete_category, name='delete_category'),
-    path('add_good/', views.add_good, name="add_good"),
-    path('add_category/', views.add_category, name='add_category'),
-    path('insert_batch/', views.upload_excel, name="upload_excel"),
-    path('export/', views.export_excel, name='export_to_excel'),
+    path('dashboard/', include('dashboard.urls')),
 ]
