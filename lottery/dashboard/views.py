@@ -1,12 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from .models import Good, Category
 from io import BytesIO
 import openpyxl
 
 # Create your views here.
+@login_required
 def dashboard(request):
     goods = Good.objects.all()
     categories = Category.objects.all()
@@ -17,6 +19,7 @@ def dashboard(request):
     return render(request, 'dashboard_index.html', context)
 
 @require_POST
+@login_required
 def delete_good(request):
     good_id = request.POST.get('id')
     try:
@@ -41,6 +44,7 @@ def get_good_details(request, good_id):
         return JsonResponse({'error': 'Good not found'}, status=404)
 
 @require_POST
+@login_required
 def update_good(request):
     if request.method == 'POST':
         good_id = request.POST.get('good_id')
@@ -86,6 +90,7 @@ def get_categories(request):
     return JsonResponse({'error': 'Метод не разрешен'}, status=405)
 
 @require_POST
+@login_required
 def delete_category(request):
     category_id = request.POST.get('category_id')
     if category_id:
@@ -105,6 +110,7 @@ def delete_category(request):
     return JsonResponse({'error': 'ID категории не предоставлен'}, status=400)
 
 @require_POST
+@login_required
 def add_good(request):
     good_name = request.POST.get('good_name')
     category_id = request.POST.get('category_id')
@@ -132,6 +138,7 @@ def add_good(request):
     return JsonResponse(response_data, status=200)
 
 @csrf_exempt
+@login_required
 def add_category(request):
     if request.method == 'POST':
         category_name = request.POST.get('category_name')
@@ -151,6 +158,7 @@ def add_category(request):
     return JsonResponse({'success': False, 'message': 'Неподдерживаемый метод'}, status=405)
 
 @csrf_exempt
+@login_required
 def upload_excel(request):
     if request.method == 'POST' and request.FILES.get('excel_file'):
         excel_file = request.FILES['excel_file']
@@ -186,6 +194,7 @@ def upload_excel(request):
         })
     return JsonResponse({'success': False, 'message': 'Неподдерживаемый метод'}, status=405)
 
+@login_required
 def export_excel(request):
     wb = openpyxl.Workbook()
     ws = wb.active

@@ -59,7 +59,7 @@ ROOT_URLCONF = 'lottery.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -119,6 +119,10 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
+
+LOGIN_URL = '/login/'  # URL для страницы логина
+LOGIN_REDIRECT_URL = '/dashboard/'  # URL для перенаправления после успешного логина
+LOGOUT_REDIRECT_URL = '/login/'  # URL для перенаправления после логаута
 
 
 # Static files (CSS, JavaScript, Images)
