@@ -5,8 +5,8 @@ $(document).ready(function() {
     e.preventDefault();
     
     var name = $(this).data('name');
-    var cost = $(this).data('cost');
-    var pv = $(this).data('pv');
+    var cost = parseFloat($(this).data('cost')).toFixed(2); // Преобразуем в число с двумя знаками после запятой
+    var pv = parseFloat($(this).data('pv')).toFixed(2); // Преобразуем в число с двумя знаками после запятой
 
     var newRow = `
       <tr>
