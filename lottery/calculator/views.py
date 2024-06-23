@@ -2,7 +2,7 @@ from django.shortcuts import render
 from dashboard.models import Good,Category
 # Create your views here.
 
-def calculator(request, context):
+def calculator(request):
     goods = Good.objects.all()
     categories = Category.objects.all()
     context = {
