@@ -15,24 +15,25 @@
                 <!-- Левая колонка -->
                 <div>
                     <h3>Категории</h3>
+                    <input type="text" id="itemSearchInput" class="form-control mb-3" placeholder="Фильтр категорий">
                     <ul class="list-group">
                         {% for category in categories %}
+                        <li class="list-group-item">
+                          <a href="#collapseCategory{{ category.id }}" data-toggle="collapse" aria-expanded="false" aria-controls="collapseCategory{{ category.id }}">
+                            {{ category.category }}
+                          </a>
+                          <ul class="list-group collapse mt-2 {% if category.has_match %}show{% endif %}" id="collapseCategory{{ category.id }}">
+                            {% for good in category.good_set.all %}
                             <li class="list-group-item">
-                                <a href="#collapseCategory{{ category.id }}" data-toggle="collapse" aria-expanded="false" aria-controls="collapseCategory{{ category.id }}">
-                                    {{ category.category }}
-                                </a>
-                                <ul class="list-group collapse mt-2" id="collapseCategory{{ category.id }}">
-                                    {% for good in category.good_set.all %}
-                                        <li class="list-group-item">
-                                            <a href="#" class="good-item" data-id="{{ good.id }}" data-name="{{ good.good_name }}" data-category-id="{{good.category}}" data-category="{{ good.category.category }}" data-cost="{{ good.catalog_cost }}" data-pv="{{ good.pv_value }}">
-                                                {{ good.good_name }}
-                                            </a>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
+                              <a href="#" class="good-item" data-id="{{ good.id }}" data-name="{{ good.good_name }}" data-category-id="{{ good.category.id }}" data-category="{{ good.category.category }}" data-cost="{{ good.catalog_cost }}" data-pv="{{ good.pv_value }}">
+                                {{ good.good_name }}
+                              </a>
                             </li>
+                            {% endfor %}
+                          </ul>
+                        </li>
                         {% endfor %}
-                    </ul>
+                      </ul>
                 </div>
               </div>
               <div class="col-md-9">

@@ -1,6 +1,38 @@
 $(document).ready(function() {
   var rowIndex = 1;
 
+      // Функция для поиска товаров по введённому тексту
+  $('#itemSearchInput').on('input', function() {
+        var search = $(this).val().toLowerCase().trim();
+    
+        // Скрываем все collapse, которые не содержат совпадений
+        $('.list-group-item').each(function() {
+          var categoryCollapse = $(this).find('.collapse');
+          var hasMatch = false;
+    
+        $(this).find('.good-item').each(function() {
+          var itemName = $(this).data('name').toLowerCase();
+
+            // Проверяем, содержит ли имя товара текст поиска
+          if (itemName.includes(search)) {
+            hasMatch = true;
+            return false; // Выходим из цикла по товарам
+          }
+        });
+      // Показываем или скрываем collapse для категории
+      if (hasMatch) {
+        categoryCollapse.addClass('show');
+      } else {
+        categoryCollapse.removeClass('show');
+      }
+    });
+    
+    // Если фильтр пустой, сворачиваем все категории
+    if (search === '') {
+      $('.collapse').removeClass('show');
+    }
+  });    
+
   $('.good-item').on('click', function(e) {
     e.preventDefault();
     
