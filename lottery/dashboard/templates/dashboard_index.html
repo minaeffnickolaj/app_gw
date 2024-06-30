@@ -141,7 +141,7 @@
                                             {% csrf_token %}
                                             <div class="mb-3">
                                                 <label for="id_text" class="form-label">Текст шаблона</label>
-                                                <textarea class="form-control" id="id_text" name="text" rows="10">{{ form.instance.text }}</textarea>
+                                                <textarea class="form-control" id="id_text" name="text" rows="10">{{ template }}</textarea>
                                             </div>
                                             <button type="submit" class="btn btn-primary">Сохранить</button>
                                         </form>
