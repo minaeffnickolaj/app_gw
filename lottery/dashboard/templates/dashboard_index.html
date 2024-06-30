@@ -137,7 +137,7 @@
                                 <div class="row">
                                     <div class="container mt-5">
                                         <h3>Редактирование шаблона</h3>
-                                        <form id="editTemplateForm">
+                                        <form id="editTemplateForm" method="POST">
                                             {% csrf_token %}
                                             <div class="mb-3">
                                                 <label for="id_text" class="form-label">Текст шаблона</label>

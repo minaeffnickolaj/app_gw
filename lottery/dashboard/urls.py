@@ -13,4 +13,5 @@ urlpatterns = [
     path('add_category/', views.add_category, name='add_category'),
     path('insert_batch/', views.upload_excel, name="upload_excel"),
     path('export/', views.export_excel, name='export_to_excel'),
+    path('update_template/', views.update_template, name='update_template')
 ]

@@ -226,3 +226,22 @@ def export_excel(request):
     response = HttpResponse(content=virtual_workbook, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=gw_export_goods.xlsx'
     return response
+
+@csrf_exempt
+@login_required
+def update_template(request):
+    if request.method == 'POST':
+        template = TemplateFinalText.objects.first()
+        if template:
+            new_text = request.POST.get('text')
+            if new_text:
+                template.text = new_text
+                template.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Шаблон успешно обновлен'
+            })
+        else:
+            return JsonResponse({'success': False, 'message': 'Ошибка!'}, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Неподдерживаемый метод'}, status=405)
