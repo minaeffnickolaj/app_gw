@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Good, Category
+from .models import Good, Category, TemplateFinalText
 from io import BytesIO
 import openpyxl
 
@@ -12,9 +12,11 @@ import openpyxl
 def dashboard(request):
     goods = Good.objects.all()
     categories = Category.objects.all()
+    template = TemplateFinalText.objects.get(pk=1).text #только один шаблон
     context = {
         'goods': goods,
         'categories': categories,
+        'template' : template
     }
     return render(request, 'dashboard_index.html', context)
 
