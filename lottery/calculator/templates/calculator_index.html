@@ -38,30 +38,46 @@
               </div>
               <div class="col-md-9">
                 <!-- Правая колонка -->
-                <h3>Выбранные позиции</h3>
-                <div class="table">
-                    <table class="table table-bordered" id="selectedItemsTable">
-                        <thead>
-                            <tr>
-                              <th>№</th>
-                              <th>Наименование</th>
-                              <th>Цена</th>
-                              <th>За подарочные</th>
-                              <th>Объем в PV</th>
-                              <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <!-- Строки будут добавлены сюда динамически -->
-                            <tr id="totalsRow">
-                                <td colspan="2" class="text-right"><strong>Итого:</strong></td>
-                                <td><strong id="totalCost">0.00</strong></td>
-                                <td></td>
-                                <td><strong id="totalPV">0.00</strong></td>
-                                <td></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="row">
+                    <div class="container">
+                        <h3>Выбранные позиции</h3>
+                        <div class="table">
+                            <table class="table table-bordered" id="selectedItemsTable">
+                                <thead>
+                                    <tr>
+                                      <th>№</th>
+                                      <th>Наименование</th>
+                                      <th>Цена</th>
+                                      <th>За подарочные</th>
+                                      <th>Объем в PV</th>
+                                      <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <!-- Строки будут добавлены сюда динамически -->
+                                    <tr id="totalsRow">
+                                        <td colspan="2" class="text-right"><strong>Итого:</strong></td>
+                                        <td><strong id="totalCost">0.00</strong></td>
+                                        <td></td>
+                                        <td><strong id="totalPV">0.00</strong></td>
+                                        <td></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="container">
+                        <h3>Расчет</h3>
+                        <form id="getTotalForm" method="GET">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <textarea class="form-control" id="id_text" name="text" rows="10"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Расчитать!</button>
+                        </form>
+                    </div>
                 </div>
               </div>
             </div>
