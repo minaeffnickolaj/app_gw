@@ -3,7 +3,7 @@ from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from .models import Good, Category
+from .models import Good, Category, TemplateFinalText
 from io import BytesIO
 import openpyxl
 
@@ -12,9 +12,11 @@ import openpyxl
 def dashboard(request):
     goods = Good.objects.all()
     categories = Category.objects.all()
+    template = TemplateFinalText.objects.get(pk=1).text #только один шаблон
     context = {
         'goods': goods,
         'categories': categories,
+        'template' : template
     }
     return render(request, 'dashboard_index.html', context)
 
@@ -224,3 +226,22 @@ def export_excel(request):
     response = HttpResponse(content=virtual_workbook, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename=gw_export_goods.xlsx'
     return response
+
+@csrf_exempt
+@login_required
+def update_template(request):
+    if request.method == 'POST':
+        template = TemplateFinalText.objects.first()
+        if template:
+            new_text = request.POST.get('text')
+            if new_text:
+                template.text = new_text
+                template.save()
+            return JsonResponse({
+                'success': True,
+                'message': 'Шаблон успешно обновлен'
+            })
+        else:
+            return JsonResponse({'success': False, 'message': 'Ошибка!'}, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Неподдерживаемый метод'}, status=405)

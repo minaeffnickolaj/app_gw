@@ -64,6 +64,7 @@ function refreshSidebar(categories, goods) {
 }
 
 $(document).ready(function() {
+    
     // Обработчик кликов по элементам списка товаров (в том числе и добавленных динамически)
     $(document).on('click', '.good-item', function(e) {
         e.preventDefault();
@@ -386,6 +387,29 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 toastr.error('Произошла ошибка при экспорте данных');
+            }
+        });
+    });
+
+    $('#editTemplateForm').submit(function(e) {
+        e.preventDefault(); // Предотвратить отправку формы по умолчанию
+
+        var formData = $(this).serialize(); // Сериализовать данные формы
+
+        $.ajax({
+            type: 'POST',
+            url: '/dashboard/update_template/', // URL для вашего представления сохранения шаблона
+            data: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            },
+            success: function(response) {
+                // Показать сообщение об успешном сохранении
+                toastr.success('Шаблон успешно сохранен!');
+            },
+            error: function(error) {
+                // Показать сообщение об ошибке
+                toastr.error('Произошла ошибка при сохранении шаблона!');
             }
         });
     });

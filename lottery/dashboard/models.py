@@ -16,3 +16,10 @@ class Good(models.Model):
 
     def _str_(self):
         return self.good_name
+    
+class TemplateFinalText(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    text = models.TextField()
+
+    def __str__(self):
+        return self.name
